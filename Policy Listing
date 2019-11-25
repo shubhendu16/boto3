@@ -1,0 +1,101 @@
+import sys
+import time
+import boto3
+
+p_names = []
+p_arns = []
+r_names = []
+r_arns = []
+p_total = []
+r_total = []
+
+iam = boto3.client('iam')
+
+
+def getter(response, s):
+    names = []
+    arns = []
+    for i in response:
+        if s == 'policy':
+            p_names.append(i['PolicyName'])
+            p_arns.append(i['Arn'])
+            names = p_names
+            arns = p_arns
+        elif s == 'roles':
+            r_names.append(i['RoleName'])
+            r_arns.append(i['Arn'])
+            names = r_names
+            arns = r_arns
+    return names, arns
+
+
+res = iam.list_policies()
+a = 0
+while a == 0:
+    if res['IsTruncated']:
+        Marker = res['Marker']
+        res = res['Policies']
+        s = getter(res, "policy")
+        p_names = s[0]
+        p_arns = s[1]
+        res = iam.list_policies(Marker=Marker)
+        a = 0
+    else:
+        res = res['Policies']
+        s = getter(res, "policy")
+        p_names = s[0]
+        p_arns = s[1]
+        a = 1
+
+res2 = iam.list_roles()
+b = 0
+while b == 0:
+    if res2['IsTruncated']:
+        Marker = res2['Marker']
+        res2 = res2['Roles']
+        s = getter(res2, 'roles')
+        r_names = s[0]
+        r_arns = s[1]
+        res2 = iam.list_roles(Marker=Marker)
+        b = 0
+    else:
+        res2 = res2['Roles']
+        s = getter(res2, 'roles')
+        r_names = s[0]
+        r_arns = s[1]
+        b = 1
+#For Printing
+while True:
+    startTime = time.time()
+    print(
+        'Enter a number between 1-7 where:\n 1- Printing roles \n 2-Printing Roles names \n 3- Printing Role arns \n '
+        '4- '
+        'Printing Policies \n 5- Printing Policy ARN \n 6-Printing Policy Names \n 7- For Exiting the program')
+    ch = int(input("Enter your choice:"))
+    if ch == 1:
+        r_total.append(r_names)
+        r_total.append(r_arns)
+        print(r_total)
+    elif ch == 2:
+        print(p_names)
+    elif ch == 3:
+        print(p_arns)
+    elif ch == 4:
+        p_total.append(p_names)
+        p_total.append(p_arns)
+        print(p_total)
+    elif ch == 5:
+        print(p_arns)
+    elif ch == 6:
+        print(p_names)
+    elif ch == 7:
+        sys.exit()
+
+    else:
+        print(
+            'Not a proper choice these are your choices:\n 1- Printing roles \n 2-Printing Roles names \n 3- Printing '
+            'Role arns \n 4- '
+            'Printing Policies \n 5- Printing Policy ARN \n 6-Printing Policy Names \n 7- For Exiting the program')
+    time.sleep(5)
+ch = int(input("Enter your choice:"))
+
